@@ -5,7 +5,7 @@ module Analytics
       attr_writer :ga
       def initialize opts={}
         super opts.reverse_merge :script_src =>'//www.google-analytics.com/analytics.js'
-        self.ga = escape_once( opts[:ga].presence || 'ga' )
+        self.ga =opts[:ga].presence || 'ga'
       end
       # @param {Window}      i The global context object.
       # @param {Document}    s The DOM document object.
@@ -41,7 +41,7 @@ module Analytics
           (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
           m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
           })(#{args.join(',')});
-          #{create_and_send unless false == opts[:create]}
+          #{create_and_send opts}
           </script>
           CANONICAL_TRACKING
         end
@@ -53,16 +53,21 @@ module Analytics
           <script async src='#{script_src}'></script>
           <script>
           window.#{ga}=window.#{ga}||function(){(#{ga}.q=#{ga}.q||[]).push(arguments)};#{ga}.l=+new Date;
-          #{create_and_send if false != opts[:create]}
+          #{create_and_send opts}
           </script>
           ASYNC_TRACKING
         end
 
-        def create_and_send
-          <<-CREATE.gsub(/^\s+/, '')
-          #{ga}('create', '#{web_property_id}', 'auto');
-          #{ga}('send', 'pageview');
-          CREATE
+        def create_and_send opts={}
+          code = []
+          if opts[:create] != false
+            code << %"#{ga}('create', '#{web_property_id}', 'auto');"
+            code << %"#{ga}('require', 'displayfeatures');" if remarketing
+            code << %"#{ga}('send', 'pageview');"
+            code.join("\n")
+          else
+            ''
+          end
         end
 
         def debug_trace

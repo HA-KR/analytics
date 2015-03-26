@@ -1,10 +1,11 @@
 require 'active_support'
 require 'action_pack'
 require 'action_view'
+require 'active_record'
 
-require "analytics/version"
-require "analytics/models"
-require "analytics/helpers"
+require 'analytics/version'
+require 'analytics/models'
+require 'analytics/helpers'
 
 module Analytics
   def self.included base

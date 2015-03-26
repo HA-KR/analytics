@@ -16,7 +16,7 @@ module Analytics
         puts args.inspect
         opts = args.extract_options!
         args << opts
-        <<-TRACKING_CODE.gsub(/^\s+/, '')
+        <<-TRACKING_CODE
         <script type="text/javascript">
         #{create_and_send if false != opts[:create]}
         (function() {
@@ -30,12 +30,11 @@ module Analytics
 
       private
       def create_and_send opts={}
-          code = []
+          code = ""
           if opts[:create] != false
-            code << %"var _gaq = _gaq || [];"
-            code << %"_gaq.push(['_setAccount', '#{web_property_id}']);"
-            code << %"_gaq.push(['_trackPageview']);"
-            code.join("\n")
+            code << "var _gaq = _gaq || [];"
+            code << "_gaq.push(['_setAccount', '#{web_property_id}']);"
+            code << "_gaq.push(['_trackPageview']);"
           else
             ''
           end

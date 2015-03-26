@@ -18,7 +18,7 @@ module Analytics
         puts args.inspect
         opts = args.extract_options!
         args << opts
-        <<-TRACKING_CODE.gsub(/^\s+/, '')
+        <<-TRACKING_CODE
         #{debug_trace}
         #{opts[:modern]? async_tracking_code(*args): canonical_tracking_code(*args)}
         TRACKING_CODE
@@ -35,7 +35,7 @@ module Analytics
           defaults = ["window", "document", "'script'","'#{script_src}'", "'#{ga}'"]
           defaults.shift args.length
           args = args << defaults
-          <<-CANONICAL_TRACKING.gsub(/^\s+/, '')
+          <<-CANONICAL_TRACKING
           <script type='text/javascript'>
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
           (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -49,7 +49,7 @@ module Analytics
         def async_tracking_code *args
           puts args.inspect
           opts = args.extract_options!
-          <<-ASYNC_TRACKING.gsub(/^\s+/, '')
+          <<-ASYNC_TRACKING
           <script async src='#{script_src}'></script>
           <script>
           window.#{ga}=window.#{ga}||function(){(#{ga}.q=#{ga}.q||[]).push(arguments)};#{ga}.l=+new Date;
@@ -61,9 +61,9 @@ module Analytics
         def create_and_send opts={}
           code = []
           if opts[:create] != false
-            code << %"#{ga}('create', '#{web_property_id}', 'auto');"
-            code << %"#{ga}('require', 'displayfeatures');" if remarketing
-            code << %"#{ga}('send', 'pageview');"
+            code << "#{ga}('create', '#{web_property_id}', 'auto');"
+            code << "#{ga}('require', 'displayfeatures');" if remarketing
+            code << "#{ga}('send', 'pageview');"
             code.join("\n")
           else
             ''

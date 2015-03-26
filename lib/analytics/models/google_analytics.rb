@@ -1,6 +1,6 @@
 module Analytics
   module Models
-    class GoogleAnalytics < SimpleAnalytics
+    class GoogleAnalytics < Base
 
       attr_accessor :debug
       attr_accessor :script_src
@@ -8,7 +8,7 @@ module Analytics
       attr_accessor :web_property_id
 
       def initialize opts={}
-        opts.symbolize_keys!
+        super
         self.debug = opts[:debug].presence || false
         self.script_src = (opts.has_key? :script_src)? opts[:script_src] :'#'
         self.remarketing = opts[:remarketing].presence || false

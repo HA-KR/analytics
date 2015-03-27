@@ -4,16 +4,21 @@ module Analytics
 
       def analytics handle, *args, &block
         opts = args.extract_options!
+        wrap_script = opts.delete :wrap_script
         code = ""
         args << opts
         code << handle.tracking_code(*args) if opts.delete(:init)
         content = Analytics::Models::Tokens.parse capture(&block), safe_handle(handle)
         if block_given?
-          code <<<<-HTML
-          <script type='text/javascript'>
-          #{content}
-          </script>
-          HTML
+          code << if wrap_script == false
+                    content
+                  else
+                    <<-HTML
+                    <script type='text/javascript'>
+                    #{content}
+                    </script>
+                    HTML
+                  end
         end
         if block_called_from_erb?(block)
           concat(code)

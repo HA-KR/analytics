@@ -2,6 +2,17 @@ module Analytics
   module Models
     class UniversalGoogleAnalytics < GoogleAnalytics
 
+      #Methods https://developers.google.com/analytics/devguides/collection/analyticsjs/method-reference
+      # 'ga' object methods
+      #    ga('create', trackingId, opt_configObject)
+      #    ga.getByName(name)
+      #    ga.getAll()
+      #  'tracker' Object methods
+      #     ga('send', hitType, opt_fieldObject)
+      #     ga('set', fieldName, value)
+      #     tracker.get(fieldName)
+      #   Calling Syntax - changes for sync/ async/ named/ sync-function
+
       attr_writer :ga
       def initialize opts={}
         super opts.reverse_merge :script_src =>'//www.google-analytics.com/analytics.js'

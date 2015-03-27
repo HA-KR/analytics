@@ -20,6 +20,10 @@ module Analytics
       end
       alias_method_chain :script_src, :debug
 
+      def method_missing method, *args, &block
+        super
+      end
+
     end
   end
 end

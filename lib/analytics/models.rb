@@ -1,8 +1,13 @@
 module Analytics
   module Models
-    Dir.glob(File.dirname(__FILE__)+'/analytical/models/*.rb').each do |file|
-      require_dependency file
-    end
+    require_dependency 'analytics/models/context_aware'
+
+    require_dependency 'analytics/models/base'
+    require_dependency 'analytics/models/tokens'
+
+    require_dependency 'analytics/models/google_analytics'
+    require_dependency 'analytics/models/classic_google_analytics'
+    require_dependency 'analytics/models/universal_google_analytics'
   end
 end
 

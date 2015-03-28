@@ -2,22 +2,27 @@ module Analytics
   module Models
     class UniversalGoogleAnalytics < GoogleAnalytics
 
-      #Methods https://developers.google.com/analytics/devguides/collection/analyticsjs/method-reference
+      #Provides a single global object `ga`
+      #Method reference https://developers.google.com/analytics/devguides/collection/analyticsjs/method-reference
       # 'ga' object methods
       #    ga('create', trackingId, opt_configObject)
       #    ga.getByName(name)
       #    ga.getAll()
+      #
       #  'tracker' Object methods
       #     ga('send', hitType, opt_fieldObject)
       #     ga('set', fieldName, value)
       #     tracker.get(fieldName)
+      #
       #   Calling Syntax - changes for sync/ async/ named/ sync-function
 
-      attr_writer :ga
+      attr_writer :tracker
+
       def initialize opts={}
         super opts.reverse_merge :script_src =>'//www.google-analytics.com/analytics.js'
-        self.ga =opts[:ga].presence || 'ga'
+        self.tracker =opts[:tracker].presence || 'ga'
       end
+
       # @param {Window}      i The global context object.
       # @param {Document}    s The DOM document object.
       # @param {string}      o Must be 'script'.
@@ -25,65 +30,64 @@ module Analytics
       # @param {string}      r Global name of analytics object.  Defaults to 'ga'.
       # @param {DOMElement?} a Async script tag.
       # @param {DOMElement?} m First script tag in document.
-      def tracking_code *args
-        puts args.inspect
-        opts = args.extract_options!
-        args << opts
-        <<-TRACKING_CODE
-        #{debug_trace}
-        #{opts[:modern]? async_tracking_code(*args): canonical_tracking_code(*args)}
-        TRACKING_CODE
-      end
-
-      def ga
-        @ga ||= 'ga'
-      end
-
-      private
-        def canonical_tracking_code *args
-          puts args.inspect
-          opts = args.extract_options!
-          defaults = ["window", "document", "'script'","'#{script_src}'", "'#{ga}'"]
-          defaults.shift args.length
-          args = args << defaults
-          <<-CANONICAL_TRACKING
-          <script type='text/javascript'>
+      def canonical_tracking_code *args
+        defaults = ["window", "document", "'script'","'#{script_src}'", "'#{tracker}'"]
+        defaults.shift args.length
+        args = args << defaults
+        debug_trace
+        _ << <<-CANONICAL_TRACKING
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
           (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
           m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
           })(#{args.join(',')});
-          #{create_and_send opts}
-          </script>
-          CANONICAL_TRACKING
-        end
+        CANONICAL_TRACKING
+        self
+      end
+      def canonical_tracking_code_with_pagetrack *args
+        canonical_tracking_code_without_pagetrack.create_and_track
+      end
+      alias_method_chain :canonical_tracking_code, :pagetrack
+      alias_method :tracking_code, :canonical_tracking_code
 
-        def async_tracking_code *args
-          puts args.inspect
-          opts = args.extract_options!
-          <<-ASYNC_TRACKING
+      def tracker
+        @tracker ||= 'ga'
+      end
+
+      def ga *args
+        _ << "#{tracker}(#{args.collect(&:to_json).join(',')});"
+        self
+      end
+
+      def async_tracking_code *args
+        _ << <<-ASYNC_TRACKING
           <script async src='#{script_src}'></script>
           <script>
-          window.#{ga}=window.#{ga}||function(){(#{ga}.q=#{ga}.q||[]).push(arguments)};#{ga}.l=+new Date;
-          #{create_and_send opts}
+          window.#{tracker}=window.#{tracker}||function(){(#{tracker}.q=#{tracker}.q||[]).push(arguments)};#{tracker}.l=+new Date;
           </script>
-          ASYNC_TRACKING
-        end
+        ASYNC_TRACKING
+        self
+      end
 
-        def create_and_send opts={}
-          code = []
-          if opts[:create] != false
-            code << "#{ga}('create', '#{web_property_id}', 'auto');"
-            code << "#{ga}('require', 'displayfeatures');" if remarketing
-            code << "#{ga}('send', 'pageview');"
-            code.join("\n")
-          else
-            ''
-          end
-        end
+      def async_tracking_code_with_pagetrack *args
+        async_tracking_code_without_pagetrack
+        _ << '<script>'
+        create_and_track
+        _ << '</script>'
+      end
+      alias_method_chain :async_tracking_code, :pagetrack
 
-        def debug_trace
-          ('trace' == debug)? 'window.ga_debug = {trace: true};' : ''
+      def create_and_track
+        ga('create', web_property_id, 'auto')
+        ga('require', 'displayfeatures') if remarketing
+        ga('send', 'pageview')
+      end
+
+      def debug_trace
+        if 'trace' == debug
+          _ << 'window.ga_debug = {trace: true};'
         end
+        self
+      end
 
     end
   end

@@ -35,7 +35,7 @@ module Analytics
         defaults.shift args.length
         args = args << defaults
         debug_trace
-        _ << <<-CANONICAL_TRACKING
+        self << <<-CANONICAL_TRACKING
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
           (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
           m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -54,12 +54,12 @@ module Analytics
       end
 
       def ga *args
-        _ << "#{tracker}(#{args.collect(&:to_json).join(',')});"
+        self << "#{tracker}(#{args.collect(&:to_json).join(',')});"
         self
       end
 
       def async_tracking_code *args
-        _ << <<-ASYNC_TRACKING
+        self << <<-ASYNC_TRACKING
           <script async src='#{script_src}'></script>
           <script>
           window.#{tracker}=window.#{tracker}||function(){(#{tracker}.q=#{tracker}.q||[]).push(arguments)};#{tracker}.l=+new Date;
@@ -70,9 +70,9 @@ module Analytics
 
       def async_tracking_code_with_pagetrack *args
         async_tracking_code_without_pagetrack
-        _ << '<script>'
+        self << '<script>'
         create_and_track
-        _ << '</script>'
+        self << '</script>'
       end
       alias_method_chain :async_tracking_code, :pagetrack
 
@@ -84,7 +84,7 @@ module Analytics
 
       def debug_trace
         if 'trace' == debug
-          _ << 'window.ga_debug = {trace: true};'
+          self << 'window.ga_debug = {trace: true};'
         end
         self
       end

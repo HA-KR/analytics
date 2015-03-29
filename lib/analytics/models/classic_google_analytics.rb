@@ -124,7 +124,7 @@ module Analytics
       # creates a tracker with the 'web_property_id' and tracks the page view
       # Returns self
       def create_tracker
-        _<< 'var _gaq = _gaq || [];'
+        self << 'var _gaq = _gaq || [];'
         push(['_setAccount', web_property_id])
         self
       end
@@ -132,7 +132,7 @@ module Analytics
       # returns the tracking code without page track for ClassicGoogleAnalytics
       # Returns String classic google analytics tracking code without page view track
       def tracking_code
-        _ << %{
+        self << %{
         (function() {
           var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
           ga.src = #{script_src};
@@ -156,7 +156,7 @@ module Analytics
       #args - Zero or More Objects to be tracked by google analytics
       #Returns String
       def track *args
-        _ << "_gaq.push(#{args.to_json});"
+        self << "_gaq.push(#{args.to_json});"
         self
       end
       alias_method :push, :track
